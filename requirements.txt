@@ -1,12 +1,9 @@
 # Core libraries
 streamlit
 ultralytics
-opencv-python
+opencv-python-headless
 numpy
 Pillow
-
-# Database
-sqlite3
 
 # For working with temporary files and directories
 python-dateutil>=2.8.2
@@ -15,17 +12,15 @@ python-dateutil>=2.8.2
 imageio>=2.31.0
 imageio-ffmpeg>=0.4.8
 
-# Optional - for camera functionality
-# streamlit-webrtc>=0.47.1
-
-# Optional - for Colab integration
-# pyngrok>=7.0.0
-
-# For handling Roboflow datasets (if needed)
-roboflow>=1.1.9
+# For camera functionality
+streamlit-webrtc>=0.47.1
+av
 
 # For data analysis in logging view
 pandas>=2.0.0
 
 # For progress display
 tqdm>=4.66.0
+
+# For handling Roboflow datasets (if needed)
+roboflow>=1.1.9
