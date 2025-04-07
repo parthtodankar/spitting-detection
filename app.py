@@ -11,6 +11,7 @@ from ultralytics import YOLO
 import io
 import base64
 import warnings
+import av
 warnings.filterwarnings('ignore')
 
 # Initialize the app
@@ -111,10 +112,16 @@ def create_mock_data():
 # Get a list of available YOLO models
 @st.cache_data
 def get_available_models():
-    # In a real app, you might scan a directory for models
-    # For now, we'll hardcode a few options including your trained model
+    # Check if model exists in the current directory
+    if os.path.exists("best.pt"):
+        model_path = "best.pt"
+    else:
+        # Use a default model if the custom model is not available
+        model_path = "yolov8n.pt"
+        st.warning("Custom model not found. Using default YOLOv8n model.")
+    
     return {
-        "Spitting Detection model": "/Users/todankar/Desktop/spitting-detection-project/best.pt"
+        "Spitting Detection model": model_path
     }
 
 # Random person identification (for demo purposes)
@@ -358,7 +365,12 @@ def load_model(model_path):
         return YOLO(model_path)
     except Exception as e:
         st.error(f"Error loading model: {e}")
-        return None
+        # Fallback to a default model
+        try:
+            return YOLO("yolov8n.pt")
+        except:
+            st.error("Failed to load any model. Please check your installation.")
+            return None
 
 # Load the selected model
 model = load_model(selected_model_path)
@@ -425,32 +437,24 @@ with tab1:
                         pass
 
     elif mode == "Camera":
-        from streamlit_webrtc import webrtc_streamer, VideoTransformerBase
-        import av
-
-class SpittingDetector(VideoTransformerBase):
-    def __init__(self):
-        self.model = model
-
-    def transform(self, frame):
-        img = frame.to_ndarray(format="bgr24")
-        results = self.model.predict(source=img, conf=confidence, verbose=False)
-        annotated = results[0].plot()
-
-        # Optional: Aadhaar overlay here if spitting detected
-        return annotated
-
-with tab1:
-    if mode == "Camera":
         st.header("Live Camera Detection")
         st.warning("Note: You must allow camera access in your browser.")
+
+        class SpittingDetector(VideoTransformerBase):
+            def __init__(self):
+                self.model = model
+
+            def transform(self, frame):
+                img = frame.to_ndarray(format="bgr24")
+                results = self.model.predict(source=img, conf=confidence, verbose=False)
+                annotated = results[0].plot()
+                return av.VideoFrame.from_ndarray(annotated, format="bgr24")
 
         webrtc_streamer(
             key="spit-detect",
             video_transformer_factory=SpittingDetector,
             media_stream_constraints={"video": True, "audio": False},
         )
-
         
         cam_test_image = st.file_uploader("Upload a camera test image (optional)", type=["jpg", "jpeg", "png"])
 
@@ -520,3 +524,4 @@ with tab3:
 # Add footer
 st.sidebar.markdown("---")
 st.sidebar.markdown("© 2025 Team [Matrix]")
+
