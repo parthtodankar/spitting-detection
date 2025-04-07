@@ -171,9 +171,9 @@ def process_image_with_aadhaar(image, model, conf=0.4):
     
     # Check if any spitting detection (assuming class 0 is spitting)
     spitting_detected = False
-    if len(results[0].boxes) > 0:
-        for box in results[0].boxes:
-            cls = int(box.cls[0].item())
+    if results[0].boxes is not None and len(results[0].boxes.data) > 0:
+        for box in results[0].boxes.data:
+            cls = int(box[5].item())
             if cls == 0:  # Assuming class 0 is spitting
                 spitting_detected = True
                 
@@ -259,8 +259,8 @@ def process_video_with_aadhaar(video_path, model, conf=0.4):
         
         # Check if any spitting detection
         if len(results[0].boxes) > 0:
-            for box in results[0].boxes:
-                cls = int(box.cls[0].item())
+            for box in results[0].boxes.data:
+                cls = int(box[5].item())
                 if cls == 0:  # Assuming class 0 is spitting
                     spitting_detected = True
                     frame_spitting = True
